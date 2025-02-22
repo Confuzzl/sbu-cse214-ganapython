@@ -1,6 +1,23 @@
 # Overview
+
 A Python to $\LaTeX$ transpiler for those taking CSE214 with Prof. Ganapathi. May still require manual tweaking of the output on the user's end for certain edge cases, but gets the bulk of the job done.
+
 # Array syntax
+
+<!-- ```py
+# ex1.py
+def Arrays():
+    A = Array((1, n))
+    B = Array((1, n), (0, 0))
+    C = Array((1, n), (1, n))
+    D = Array((1, n), Array(B, (1, n)))
+    Array(E, (1, n))  # equivalent to F
+    F: Array((1, n))  # equivalent to E
+``` -->
+<table>
+<tr>
+<td>
+
 ```py
 # ex1.py
 def Arrays():
@@ -11,12 +28,26 @@ def Arrays():
     Array(E, (1, n))  # equivalent to F
     F: Array((1, n))  # equivalent to E
 ```
+
+ </td>
+ <td>
+
+ ![ex 1](assets/ex1.png)
+
+ </td>
+</tr>
+</table>
+
 ```
 converter.py ex1.py -o my_file.tex -t 0
 ```
-![ex 1](assets/ex1.png)
 
 # Other data structures syntax
+
+<table>
+<tr>
+<td>
+
 ```py
 # ex2.py
 def Structures():
@@ -37,12 +68,26 @@ def Structures():
     L = MinHeap()
     M = MaxHeap()
 ```
+
+ </td>
+ <td>
+
+ ![ex 2](assets/ex2.png)
+
+ </td>
+</tr>
+</table>
+
 ```
 converter.py ex2.py -o my_file.tex -t 1
 ```
-![ex 2](assets/ex2.png) 
 
 # Example
+
+<table>
+<tr>
+<td>
+
 ```py
 # ex3.py
 def Foo(a, b, MyArr: Array((1, n))):
@@ -69,7 +114,16 @@ def Foo(a, b, MyArr: Array((1, n))):
     _
     return Bar(Array(A, (1, n - 1)))
 ```
+
+ </td>
+ <td>
+
+ ![ex 3](assets/ex3.png)
+
+ </td>
+</tr>
+</table>
+
 ```
 converter.py ex3.py -o my_file.tex -t 2
 ```
-![ex 3](assets/ex3.png) 
