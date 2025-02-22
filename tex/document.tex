@@ -1,21 +1,68 @@
 \documentclass[letterpaper]{article}
+
 \usepackage{enumerate}
 \usepackage{amsmath}
-\usepackage{amssymb}
+%\usepackage{amssymb}
+\usepackage[letterpaper, margin=1in]{geometry}
+\usepackage{xcolor, colortbl}
+\setlength{\extrarowheight}{3pt}
 
-\setlength{\parindent}{0pt}
+\newcounter{linenum}
+\newcounter{scope}
+\newenvironment{topscope}{
+	\tt%
+	\noindent\ignorespaces%
+}{
+
+}
+\newenvironment{myscope}{
+	\stepcounter{scope}%
+	\phantom{}\ignorespaces%
+}{
+	\addtocounter{scope}{-1}
+	\setcounter{linenum}{0}
+}
+
+
+\newcommand{\repeatit}[2]{%
+	\newcount\myloopcounter%
+	\myloopcounter0% initialize the loop counter
+	\loop\ifnum\myloopcounter < #1 % Test if the loop counter is < #1
+	#2%
+	\advance\myloopcounter by 1 %
+	\repeat % start again
+}
+
+\newcommand{\codeline}{%
+	\stepcounter{linenum}%
+	\thelinenum~\repeatit{\thescope}{....}%
+}
+
+\newlength{\foo}
+\settowidth{\foo}{\texttt{b}}
+\multiply\foo by 4
+
 
 \begin{document}
-\textbf{for} $i$ $\leftarrow$ 3 \textbf{to} $n$ \textbf{do}\\
-\begin{tabular}{@{\hskip 0.1em}|@{\hskip 1em}l}
-\textsc{foo}()\\
-\end{tabular}\\
-\textbf{for} $i$ $\leftarrow$ 0 \textbf{to} $n$ \textbf{do}\\
-\begin{tabular}{@{\hskip 0.1em}|@{\hskip 1em}l}
-\textsc{foo}()\\
-\end{tabular}\\
-\textbf{foreach} child $i$ of $root$ node \textbf{do}\\
-\begin{tabular}{@{\hskip 0.1em}|@{\hskip 1em}l}
-$i$ $\leftarrow$ 0\\
-\end{tabular}\\
+	\setlength{\parindent}{0pt}
+
+	\begin{topscope}
+		a\makebox[\foo]{ab}abc\\
+%		abcdef|$\biggm\vert$h
+		abc\\
+		abc\\
+	\end{topscope}
+	\begin{topscope}
+		\codeline foo adads\\
+		\codeline adadsdaf\\
+		\begin{myscope}
+			\codeline bar\\
+			\begin{myscope}
+				\codeline bar\\
+			\end{myscope}
+		\end{myscope}
+		\begin{myscope}
+			bar\\
+		\end{myscope}
+	\end{topscope}
 \end{document}

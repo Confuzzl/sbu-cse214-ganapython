@@ -1,0 +1,100 @@
+\documentclass[letterpaper]{article}
+
+\usepackage{amsmath}
+\usepackage{xcolor, colortbl}
+\usepackage{bigstrut}
+
+\definecolor{funcnamecolor}{HTML}{DCDCAA}
+\definecolor{funcnamebgcolor}{HTML}{444444}
+\definecolor{funcbodybgcolor}{HTML}{222222}
+\definecolor{controlcolor}{HTML}{C586C0}
+\definecolor{bluewordcolor}{HTML}{569CD6}
+\definecolor{numbercolor}{HTML}{B5CEA8}
+\definecolor{classcolor}{HTML}{4EC9B0}
+\definecolor{varcolor}{HTML}{9CDCFE}
+\definecolor{textcolor}{HTML}{FFFFFF}
+\definecolor{laddercolor}{HTML}{555555}
+
+\newenvironment{pseudocode}[2]{
+	\noindent\begin{tabular}[t]{|>{\columncolor{funcbodybgcolor}\color{textcolor}}l|}%
+	\hline
+	\bigstrut[t]\cellcolor{funcnamebgcolor}\textcolor{funcnamecolor}{\textsc{#1}}(#2)\\%
+	\hline
+	\bigstrut[t]
+}{
+	\hline
+	\end{tabular}\\
+}
+
+\begin{document}
+\begin{pseudocode}{Arrays}{}
+\textcolor{bluewordcolor}{Create an} \textcolor{classcolor}{array} \textcolor{varcolor}{$A$}[\textcolor{numbercolor}{1}$\dots$\textcolor{varcolor}{$n$}]\\
+\textcolor{bluewordcolor}{Create an} \textcolor{classcolor}{array} \textcolor{varcolor}{$B$}[\textcolor{numbercolor}{1}$\dots$\textcolor{varcolor}{$n$}] $\leftarrow$ [\textcolor{numbercolor}{0}$\dots$\textcolor{numbercolor}{0}]\\
+\textcolor{bluewordcolor}{Create an} \textcolor{classcolor}{array} \textcolor{varcolor}{$C$}[\textcolor{numbercolor}{1}$\dots$\textcolor{varcolor}{$n$}] $\leftarrow$ [\textcolor{numbercolor}{1}$\dots$\textcolor{varcolor}{$n$}]\\
+\textcolor{bluewordcolor}{Create an} \textcolor{classcolor}{array} \textcolor{varcolor}{$D$}[\textcolor{numbercolor}{1}$\dots$\textcolor{varcolor}{$n$}] $\leftarrow$ \textcolor{varcolor}{$B$}[\textcolor{numbercolor}{1}$\dots$\textcolor{varcolor}{$n$}]\\
+\textcolor{varcolor}{$E$}[\textcolor{numbercolor}{1}$\dots$\textcolor{varcolor}{$n$}]\\
+\textcolor{varcolor}{$F$}[\textcolor{numbercolor}{1}$\dots$\textcolor{varcolor}{$n$}]\\
+\end{pseudocode}
+\begin{pseudocode}{Structures}{}
+\textcolor{bluewordcolor}{Create a} \textcolor{classcolor}{dynamic array} \textcolor{varcolor}{$A$} $\leftarrow$ [\;]\\
+\textcolor{bluewordcolor}{Create a} \textcolor{classcolor}{2-D matrix} \textcolor{varcolor}{$B$}[\textcolor{numbercolor}{1}$\dots$\textcolor{varcolor}{$b$}][\textcolor{numbercolor}{1}$\dots$\textcolor{varcolor}{$d$}]\\
+\textcolor{bluewordcolor}{Create a} \textcolor{classcolor}{SinglyLinkedList} \textcolor{varcolor}{$C$}\\
+\textcolor{bluewordcolor}{Create a} \textcolor{classcolor}{CircularSinglyLinkedList} \textcolor{varcolor}{$D$}\\
+\textcolor{bluewordcolor}{Create a} \textcolor{classcolor}{DoublyLinkedList} \textcolor{varcolor}{$E$}\\
+\textcolor{bluewordcolor}{Create a} \textcolor{classcolor}{stack} \textcolor{varcolor}{$F$}\\
+\textcolor{bluewordcolor}{Create a} \textcolor{classcolor}{queue} \textcolor{varcolor}{$G$}\\
+\textcolor{bluewordcolor}{Create a} \textcolor{classcolor}{deque} \textcolor{varcolor}{$H$}\\
+\textcolor{bluewordcolor}{Create a} \textcolor{classcolor}{BalancedSearchTree} \textcolor{varcolor}{$I$}\\
+\textcolor{controlcolor}{\textbf{foreach}} \textcolor{bluewordcolor}{child} \textcolor{varcolor}{$child$} \textcolor{controlcolor}{of} \textcolor{varcolor}{$I$}.\textcolor{varcolor}{$root$} \textcolor{bluewordcolor}{node} \textcolor{controlcolor}{\textbf{do}}\\
+\begin{tabular}{!{\color{laddercolor}\vline}@{\hskip 1em}l}
+\textcolor{controlcolor}{\textbf{print}} spam\\
+\end{tabular}\\
+\textcolor{bluewordcolor}{Create a} \textcolor{classcolor}{hash set} \textcolor{varcolor}{$J$}\\
+\textcolor{bluewordcolor}{Create a} \textcolor{classcolor}{hash map} \textcolor{varcolor}{$K$}\\
+\textcolor{varcolor}{$K$}.\textcolor{funcnamecolor}{Add}($\langle$\textcolor{varcolor}{$k$}, \textcolor{varcolor}{$v$}$\rangle$)\\
+\textcolor{bluewordcolor}{Create a} \textcolor{classcolor}{min-heap} \textcolor{varcolor}{$L$}\\
+\textcolor{bluewordcolor}{Create a} \textcolor{classcolor}{max-heap} \textcolor{varcolor}{$M$}\\
+\end{pseudocode}
+\begin{pseudocode}{Foo}{\textcolor{varcolor}{$a$}, \textcolor{varcolor}{$b$}, \textcolor{varcolor}{$MyArr$}[\textcolor{numbercolor}{1}$\dots$\textcolor{varcolor}{$n$}]}
+(\textcolor{numbercolor}{1} $+$ (\textcolor{numbercolor}{2} $/$ \textcolor{numbercolor}{3}) $\times$ \textcolor{numbercolor}{4}) $-$ $\lfloor$$\text{\textcolor{numbercolor}{5}}^\text{\textcolor{numbercolor}{6}}$ $/$ \textcolor{numbercolor}{7}$\rfloor$ $\%$ \textcolor{numbercolor}{8}\\
+(\textcolor{numbercolor}{1} $+$ \textcolor{numbercolor}{2}) $/$ (\textcolor{numbercolor}{3} $\times$ \textcolor{numbercolor}{4}) $-$ $\lfloor$$\text{\textcolor{numbercolor}{5}}^\text{\textcolor{numbercolor}{6}}$ $/$ (\textcolor{numbercolor}{7} $\%$ \textcolor{numbercolor}{8})$\rfloor$\\
+\\
+\textcolor{controlcolor}{\textbf{while}} \textcolor{bluewordcolor}{$false$} \textcolor{controlcolor}{\textbf{do}}\\
+\begin{tabular}{!{\color{laddercolor}\vline}@{\hskip 1em}l}
+\textcolor{varcolor}{$x$} $\leftarrow$ \textcolor{varcolor}{$a$}; \textcolor{varcolor}{$y$} $\leftarrow$ \textcolor{varcolor}{$b$}\\
+\end{tabular}\\
+\\
+\textcolor{controlcolor}{\textbf{if}} \textcolor{numbercolor}{1} $+$ \textcolor{numbercolor}{1} $=$ \textcolor{numbercolor}{0} \textcolor{controlcolor}{\textbf{then}}\\
+\begin{tabular}{!{\color{laddercolor}\vline}@{\hskip 1em}l}
+\textcolor{varcolor}{$a$}.\textcolor{funcnamecolor}{bar}()\\
+\end{tabular}\\
+\textcolor{controlcolor}{\textbf{else if}} \textcolor{bluewordcolor}{not} (\textcolor{varcolor}{$MyArr$}[\textcolor{numbercolor}{0}] \textcolor{bluewordcolor}{and} (\textcolor{varcolor}{$b$}.\textcolor{varcolor}{$member$} \textcolor{bluewordcolor}{or} \textcolor{varcolor}{$c$})) \textcolor{controlcolor}{\textbf{then}}\\
+\begin{tabular}{!{\color{laddercolor}\vline}@{\hskip 1em}l}
+\textcolor{funcnamecolor}{\textsc{Baz}}()\\
+\end{tabular}\\
+\textcolor{controlcolor}{\textbf{else}}\\
+\begin{tabular}{!{\color{laddercolor}\vline}@{\hskip 1em}l}
+\textcolor{controlcolor}{\textbf{return}} (\textcolor{varcolor}{$a$}) ? $\lfloor$\textcolor{varcolor}{$a$} $/$ \textcolor{varcolor}{$b$}$\rfloor$ : \textcolor{bluewordcolor}{$null$}\\
+\end{tabular}\\
+\\
+\textcolor{controlcolor}{\textbf{for}} \textcolor{varcolor}{$i$} $\leftarrow$ \textcolor{numbercolor}{1} \textcolor{controlcolor}{\textbf{to}} \textcolor{numbercolor}{10} \textcolor{controlcolor}{\textbf{{do}}}\\
+\begin{tabular}{!{\color{laddercolor}\vline}@{\hskip 1em}l}
+\textcolor{controlcolor}{\textbf{for}} \textcolor{varcolor}{$j$} $\leftarrow$ \textcolor{numbercolor}{1} \textcolor{controlcolor}{\textbf{to}} \textcolor{numbercolor}{5} \textcolor{controlcolor}{\textbf{{do}}}\\
+\begin{tabular}{!{\color{laddercolor}\vline}@{\hskip 1em}l}
+\textcolor{controlcolor}{\textbf{continue}}\\
+\end{tabular}\\
+\end{tabular}\\
+\textcolor{controlcolor}{\textbf{for}} \textcolor{varcolor}{$i$} $\leftarrow$ \textcolor{numbercolor}{0} \textcolor{controlcolor}{\textbf{to}} \textcolor{numbercolor}{10} \textcolor{controlcolor}{\textbf{increment}} \textcolor{numbercolor}{3} \textcolor{controlcolor}{\textbf{{do}}}\\
+\begin{tabular}{!{\color{laddercolor}\vline}@{\hskip 1em}l}
+\textcolor{controlcolor}{\textbf{for}} \textcolor{varcolor}{$j$} $\leftarrow$ \textcolor{numbercolor}{10} \textcolor{controlcolor}{\textbf{down to}} \textcolor{numbercolor}{0} \textcolor{controlcolor}{\textbf{{do}}}\\
+\begin{tabular}{!{\color{laddercolor}\vline}@{\hskip 1em}l}
+\textcolor{controlcolor}{\textbf{for}} \textcolor{varcolor}{$k$} $\leftarrow$ \textcolor{numbercolor}{10} \textcolor{controlcolor}{\textbf{down to}} \textcolor{numbercolor}{0} \textcolor{controlcolor}{\textbf{decrement}} \textcolor{numbercolor}{2} \textcolor{controlcolor}{\textbf{{do}}}\\
+\begin{tabular}{!{\color{laddercolor}\vline}@{\hskip 1em}l}
+\textcolor{controlcolor}{\textbf{break}}\\
+\end{tabular}\\
+\end{tabular}\\
+\end{tabular}\\
+\\
+\textcolor{controlcolor}{\textbf{return}} \textcolor{funcnamecolor}{\textsc{Bar}}(\textcolor{varcolor}{$A$}[\textcolor{numbercolor}{1}$\dots$(\textcolor{varcolor}{$n$} $-$ \textcolor{numbercolor}{1})])\\
+\end{pseudocode}
+\end{document}

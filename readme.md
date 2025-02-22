@@ -1,3 +1,8 @@
+# Overview
+A Python to $\LaTeX$ transpiler for those taking CSE214 with Prof. Ganapathi. May still require manual tweaking of the output on the user's end for certain edge cases, but gets the bulk of the job done.
+# Array syntax
+```py
+# ex1.py
 def Arrays():
     A = Array((1, n))
     B = Array((1, n), (0, 0))
@@ -5,8 +10,15 @@ def Arrays():
     D = Array((1, n), Array(B, (1, n)))
     Array(E, (1, n))  # equivalent to F
     F: Array((1, n))  # equivalent to E
+```
+```
+converter.py ex1.py -o my_file.tex -t 0
+```
+![ex 1](assets/ex1.png)
 
-
+# Other data structures syntax
+```py
+# ex2.py
 def Structures():
     A = List()
     B = Mat((1, b), (1, d))
@@ -21,15 +33,22 @@ def Structures():
         print(r"spam")
     J = Set()
     K = Map()
-    K.Add([k, v])
+    K.Add([k, v]) # lists for kv pairs
     L = MinHeap()
     M = MaxHeap()
+```
+```
+converter.py ex2.py -o my_file.tex -t 1
+```
+![ex 2](assets/ex2.png) 
 
-
+# Example
+```py
+# ex3.py
 def Foo(a, b, MyArr: Array((1, n))):
     1 + 2 / 3 * 4 - 5 ** 6 // 7 % 8
     (1 + 2) / (3 * 4) - 5 ** 6 // (7 % 8)
-    _
+    _ # force newlines
     while False:
         x, y = a, b
     _
@@ -49,3 +68,8 @@ def Foo(a, b, MyArr: Array((1, n))):
                 break
     _
     return Bar(Array(A, (1, n - 1)))
+```
+```
+converter.py ex3.py -o my_file.tex -t 2
+```
+![ex 3](assets/ex3.png) 
