@@ -1,19 +1,9 @@
 # Overview
 
-A Python to $\LaTeX$ transpiler for those taking CSE214 with Prof. Ganapathi. May still require manual tweaking of the output on the user's end for certain edge cases, but gets the bulk of the job done.
+A Python transpiler to $\LaTeX$ that outputs the pseudocode of CSE215 with Prof. Ganapathi. May still require manual tweaking of the output on the user's end for certain edge cases, but gets the bulk of the job done.
 
 # Array syntax
 
-<!-- ```py
-# ex1.py
-def Arrays():
-    A = Array((1, n))
-    B = Array((1, n), (0, 0))
-    C = Array((1, n), (1, n))
-    D = Array((1, n), Array(B, (1, n)))
-    Array(E, (1, n))  # equivalent to F
-    F: Array((1, n))  # equivalent to E
-``` -->
 <table>
 <tr>
 <td>
@@ -32,7 +22,7 @@ def Arrays():
  </td>
  <td>
 
- ![ex 1](assets/ex1.png)
+![ex 1](assets/ex1.png)
 
  </td>
 </tr>
@@ -72,7 +62,7 @@ def Structures():
  </td>
  <td>
 
- ![ex 2](assets/ex2.png)
+![ex 2](assets/ex2.png)
 
  </td>
 </tr>
@@ -118,7 +108,7 @@ def Foo(a, b, MyArr: Array((1, n))):
  </td>
  <td>
 
- ![ex 3](assets/ex3.png)
+![ex 3](assets/ex3.png)
 
  </td>
 </tr>
