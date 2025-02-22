@@ -2,8 +2,9 @@
 
 A Python transpiler to $\LaTeX$ that outputs the pseudocode of CSE215 with Prof. Ganapathi. May still require manual tweaking of the output on the user's end for certain edge cases, but gets the bulk of the job done.
 
-# Array syntax
+Run `converter.py -h` to get started.
 
+# Array syntax
 <table>
 <tr>
 <td>

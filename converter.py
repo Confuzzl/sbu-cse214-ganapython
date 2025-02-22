@@ -43,11 +43,11 @@ def main():
     parser.add_argument("-p", "--prelude", action="store_true",
                         help="Prints out needed packages as well as pseudocode environment definition")
     parser.add_argument("-t", "--theme", type=int,
-                        help="0 for default theme, 1 for light mode, 2 for dark mode")
+                        help="0 for default theme, 1 for light mode, 2 for dark mode. 0 if omitted")
     parser.add_argument("-d", "--debug", action="store_true",
                         help="Prints out the AST")
     parser.add_argument(
-        "-o", "--output", help="Writes a new document with prelude included. Pseudocode output only is printed if omitted")
+        "-o", "--output", help="Writes a new, standalone document with prelude included. Pseudocode only output is printed if omitted")
     parser.add_argument("filename", help="File to be converted")
     args = parser.parse_args()
 
