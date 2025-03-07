@@ -1,5 +1,6 @@
 import ast
 import builtins
+from macro import MacroList
 
 DATA_STRUCTURE_TYPES = {
     "Array": "array",
@@ -18,58 +19,47 @@ DATA_STRUCTURE_TYPES = {
     "MaxHeap": "max-heap"
 }
 
+c: MacroList = None
+line_count = 0
 
-class Theme:
-    def __init__(self, funcnamecolor,
-                 funcnamebgcolor, funcbodybgcolor,
-                 controlcolor, bluewordcolor,
-                 numbercolor, classcolor,
-                 varcolor, textcolor,
-                 laddercolor):
-        self.color_list = rf"""\definecolor{{funcnamecolor}}{{HTML}}{{{funcnamecolor}}}
-\definecolor{{funcnamebgcolor}}{{HTML}}{{{funcnamebgcolor}}}
-\definecolor{{funcbodybgcolor}}{{HTML}}{{{funcbodybgcolor}}}
-\definecolor{{controlcolor}}{{HTML}}{{{controlcolor}}}
-\definecolor{{bluewordcolor}}{{HTML}}{{{bluewordcolor}}}
-\definecolor{{numbercolor}}{{HTML}}{{{numbercolor}}}
-\definecolor{{classcolor}}{{HTML}}{{{classcolor}}}
-\definecolor{{varcolor}}{{HTML}}{{{varcolor}}}
-\definecolor{{textcolor}}{{HTML}}{{{textcolor}}}
-\definecolor{{laddercolor}}{{HTML}}{{{laddercolor}}}"""
-
-
-my_theme: Theme = None
-
-SCOPE_START = r"\begin{tabular}{!{\color{laddercolor}\vline}@{\hskip 1em}l}""\n"
+# SCOPE_START = r"\begin{tabular}{!{\color{laddercolor}\vline}@{\hskip 1em}l}""\n"
+# SCOPE_END = r"\end{tabular}"
+SCOPE_START = r"\begin{scope}""\n"
+SCOPE_END = r"\end{scope}"
 NL = r"\\""\n"
 
 
-def color(col: str, str: str):
-    return rf"\textcolor{{{col}}}{{{str}}}"
+ELLIPSIS = r"$\,\dots\,$"
+
+
+def function_name_transform(str: str):
+    def caps(str: builtins.str):
+        return str[0].upper() + str[1:]
+    return "-".join(caps(word) for word in str.split("_"))
 
 
 def parse_if_or_elif(node: ast.If, keyword: str):
-    out = color("controlcolor", rf"\textbf{{{keyword}}}") + \
-        f" {parse(node.test)} " + color("controlcolor",
-                                        r"\textbf{then}") + NL
+    # out = f"{c._con(keyword)} {parse(node.test)} {c._con("then")}" + NL
+    out = getattr(c, f"_{keyword}")(parse(node.test)) + NL
     out += SCOPE_START
     for if_node in node.body:
         out += parse(if_node)
-    out += r"\end{tabular}" + NL
+    out += SCOPE_END
     if len(node.orelse) == 0:
         return out
 
-    if len(node.orelse) == 0:
-        return out
+    global line_count
+    line_count += 1
+    out += NL
 
     if type(node.orelse[0]) == ast.If:
-        out += parse_if_or_elif(node.orelse[0], "else if")
+        out += parse_if_or_elif(node.orelse[0], "elif")
     else:
-        out += color("controlcolor", r"\textbf{else}") + NL
+        out += c._else() + NL
         out += SCOPE_START
         for else_node in node.orelse:
             out += f"{parse(else_node)}"
-        out += r"\end{tabular}" + NL
+        out += SCOPE_END
     return out
 
 
@@ -77,46 +67,74 @@ def parse_ternary(node: ast.IfExp):
     return f"({parse(node.test)}) ? {parse(node.body)} : {parse(node.orelse)}"
 
 
-def parse_array_bracket_list(pair: tuple[ast.AST, ast.AST] | tuple[str, str]):
-    left, right = None, None
-    a, b = pair
-    match (type(a), type(b)):
-        case (builtins.str, builtins.str):
-            left, right = a, b
+def parse_assign_array_0():
+    return rf"[{parse_constant(ast.Constant(1))}{ELLIPSIS}{parse_name(ast.Name("n"))}]"
+
+
+def parse_assign_array_1(first: ast.Tuple | ast.Subscript):
+    match type(first):
+        case ast.Tuple:
+            return rf"{parse_assign_array_0()} $\leftarrow$ [{parse(first.elts[0])}{ELLIPSIS}{parse(first.elts[1])}]"
+        case ast.Subscript:
+            return rf"{parse_assign_array_0()} $\leftarrow$ {parse_array_subscript(first)}"
         case _:
-            lp_a, rp_a = ("(", ")") if type(a) == ast.BinOp else ("", "")
-            lp_b, rp_b = ("(", ")") if type(b) == ast.BinOp else ("", "")
-            left, right = f"{lp_a}{parse(a)}{rp_a}", f"{lp_b}{parse(b)}{rp_b}"
-    return rf"[{left}$\dots${right}]"
+            raise ValueError(f"invalid argument type {type(first)} for Array")
 
 
-def parse_array_call_name_range(node: ast.Call, *, name: ast.Name = None, range: tuple[ast.AST, ast.AST] = None):
-    if name == None and range == None:
-        return f"{parse(node.args[0])}{parse_array_bracket_list(node.args[1].elts)}"
-    return f"{parse(name)}{parse_array_bracket_list(range)}"
+def parse_assign_array_2(first: ast.Tuple, second: ast.Tuple | ast.Subscript):
+    match type(second):
+        case ast.Tuple:
+            return rf"[{parse(first.elts[0])}{ELLIPSIS}{parse(first.elts[1])}]" + r" $\leftarrow$ " + \
+                rf"[{parse(second.elts[0])}{ELLIPSIS}{parse(second.elts[1])}]"
+        case ast.Subscript:
+            return rf"[{parse(first.elts[0])}{ELLIPSIS}{parse(first.elts[1])}]" + r" $\leftarrow$ " + \
+                parse_array_subscript(second)
+        case _:
+            raise ValueError(f"invalid argument type {type(first)} for Array")
 
 
-def parse_array_creation(node: ast.Call):
-    return parse_array_bracket_list(node.args[0].elts)
+def parse_array_subscript(node: ast.Subscript):
+    match type(node.slice):
+        case ast.Slice:
+            return rf"{parse_name(node.value)}[{parse(node.slice.lower)}{ELLIPSIS}{parse(node.slice.upper)}]"
+        case _:
+            return rf"{parse_name(node.value)}[{parse(node.slice)}]"
 
 
-def parse_array_call_from_assignment(node: ast.Call):
-    a, b = None, None
-    match (type(node.args[0]), type(node.args[1])):
-        case (ast.Tuple, ast.Tuple):
-            a, b = parse_array_bracket_list(
-                node.args[0].elts), parse_array_bracket_list(node.args[1].elts)
-        case (ast.Tuple, ast.Call):
-            a, b = parse_array_bracket_list(
-                node.args[0].elts), parse_array_call_name_range(node.args[1])
-    if (a, b) == (None, None):
-        raise ValueError(
-            "invalid call argument format for parse_array_call_from_assignment")
-    return rf"{a} $\leftarrow$ {b}"
+def parse_array_type_annotation(args: list[ast.AST]):
+    match len(args):
+        case 0:
+            return parse_assign_array_0()
+        case 1:
+            return rf"[{parse(args[0].elts[0])}{ELLIPSIS}{parse(args[0].elts[1])}]"
+        case _:
+            raise ValueError(
+                "invalid number of arguments passed to Array")
 
 
-def parse_print(content: str):
-    return color("controlcolor", r"\textbf{print}") + " " + content
+def parse_print(node: ast.Constant | ast.JoinedStr):
+    def parse_fstring(node: ast.JoinedStr):
+        def parse_val(node: ast.FormattedValue | ast.Constant):
+            match type(node):
+                case ast.FormattedValue:
+                    parsed = ast.parse(node.value)
+                    return parse(parsed)
+                case ast.Constant:
+                    return node.value
+                case _:
+                    raise ValueError(
+                        f"invalid fstring parameter type {type(node)}")
+        return "".join(parse_val(val) for val in node.values)
+
+    match type(node):
+        case ast.Constant:
+            # return f"{c._con("print")} {node.value}"
+            return c._print(node.value)
+        case ast.JoinedStr:
+            # return f"{c._con("print")} {parse_fstring(node)}"
+            return c._print(parse_fstring(node))
+        case _:
+            raise ValueError(f"unknown type {type(node)} passed to print")
 
 
 def parse_call(node: ast.Call):
@@ -124,40 +142,37 @@ def parse_call(node: ast.Call):
     match type(node.func):
         case ast.Name:
             match node.func.id:
-                case "Array":
-                    return parse_array_call_name_range(node)
                 case "print":
-                    return parse_print(node.args[0].value)
-            out += color("funcnamecolor", rf"\textsc{{{node.func.id}}}")
+                    return parse_print(node.args[0])
+            out += c._func(function_name_transform(node.func.id))
         case ast.Attribute:
             out += f"{parse(node.func.value)}." + \
-                color("funcnamecolor", f"{node.func.attr}")
+                c._method(function_name_transform(node.func.attr))
     out += f"({", ".join(parse(arg) for arg in node.args)})"
     return out
 
 
 def parse_while(node: ast.While):
-    out = color("controlcolor", r"\textbf{while}") + rf" {parse(node.test)} " + color(
-        "controlcolor", r"\textbf{do}") + NL
+    out = c._while(parse(node.test)) + NL
     out += SCOPE_START
     for if_node in node.body:
         out += parse(if_node)
-    out += r"\end{tabular}" + NL
+    out += SCOPE_END
     return out
 
 
 def parse_for(node: ast.For):
     def parse_normal_for():
-        out = color("controlcolor",
-                    r"\textbf{for}") + rf" {parse(node.target)} $\leftarrow$ "
+        # out = c._con("for") + rf" {parse(node.target)} $\leftarrow$ "
+        out = ""
         lower = None
         upper = None
         direction = +1
         to = "to"
-        crement = ""
+        crement = None
         args = node.iter.args
         if len(args) == 1:
-            lower = color("numbercolor", 1)
+            lower = c._num(1)
             upper = parse(node.iter.args[0])
         else:
             lower = parse(node.iter.args[0])
@@ -170,10 +185,8 @@ def parse_for(node: ast.For):
                         direction = -1
                     else:
                         direction = +1
-                    # value = parse(args[2].operand)
                     value = args[2].operand
                 case _:
-                    # value = parse(args[2])
                     value = args[2]
             match direction:
                 case -1:
@@ -181,23 +194,22 @@ def parse_for(node: ast.For):
                 case 1:
                     to = "to"
             if value.value != 1:
-                match direction:
-                    case -1:
-                        crement = color(
-                            "controlcolor", r"\textbf{decrement}") + f" {parse(value)} "
-                    case 1:
-                        crement = color(
-                            "controlcolor", r"\textbf{increment}") + f" {parse(value)} "
-
-        out += rf"{lower} " + color("controlcolor", rf"\textbf{{{to}}}") + f" {upper} " + crement + \
-            color("controlcolor", r"\textbf{{do}}")
+                crement = parse(value)
+        cond = rf"{parse(node.target)} $\leftarrow$ {lower}"
+        match to:
+            case "to":
+                out += c._forinc(cond, upper,
+                                 crement) if crement else c._for(cond, upper)
+            case "down to":
+                out += c._fordec(cond, upper,
+                                 crement) if crement else c._fordown(cond, upper)
         return out
 
     def parse_for_each():
-        return color("controlcolor", r"\textbf{foreach}") + " " + \
-            color("bluewordcolor", "child") + rf" {parse(node.target)} " + color("controlcolor", r"of") + \
-            f" {parse(node.iter)} " + color("bluewordcolor", "node") + \
-            " " + color("controlcolor", r"\textbf{do}")
+        return c._con("foreach") + " " + \
+            c._op("child") + rf" {parse(node.target)} " + c._op("of") + \
+            f" {parse(node.iter)} " + c._op("node") + \
+            " " + c._con("do")
 
     out = ""
     match type(node.iter):
@@ -209,22 +221,30 @@ def parse_for(node: ast.For):
     out += SCOPE_START
     for body_node in node.body:
         out += parse(body_node)
-    out += r"\end{tabular}" + NL
+    out += SCOPE_END
     return out
 
 
 def parse_assign(node: ast.Assign):
-    def data_structure(data_type: str):
-        out = color("bluewordcolor", f"Create {"an" if data_type == "Array" else "a"}") + f" {
-            color("classcolor", DATA_STRUCTURE_TYPES[data_type])} {parse(node.targets[0])}"
+    def data_structure_prelude(data_type: str):
+        return f"{c._op(f"Create {"an" if data_type == "Array" else "a"}")} {c._type(DATA_STRUCTURE_TYPES[data_type])} {parse_name(node.targets[0])}"
 
+    def data_structure(data_type: str):
+        out = data_structure_prelude(data_type)
         args = node.value.args
         match data_type:
             case "Array":
-                if len(args) == 1:
-                    out += parse_array_creation(node.value)
-                else:
-                    out += parse_array_call_from_assignment(node.value)
+                match len(args):
+                    case 0:
+                        out += parse_assign_array_0()
+                    case 1:
+                        out += parse_assign_array_1(node.value.args[0])
+                    case 2:
+                        out += parse_assign_array_2(node.value.args[0],
+                                                    node.value.args[1])
+                    case _:
+                        raise ValueError(
+                            "invalid number of arguments passed to Array")
             case "List":
                 out += r" $\leftarrow$ "
                 if len(args) == 0:
@@ -235,85 +255,86 @@ def parse_assign(node: ast.Assign):
                 if len(args) != 2:
                     raise ValueError(
                         "Mat() requires tuple arguments (1, n), (1, m)")
-                out += rf"[{parse(args[0].elts[0])
-                            }$\dots${parse(args[0].elts[1])}][{parse(args[1].elts[0])
-                                                               }$\dots${parse(args[1].elts[1])}]"
-        out += NL
+                out += f"[{parse(args[0].elts[0])}{ELLIPSIS}{parse(args[0].elts[1])}]" + \
+                    f"[{parse(args[1].elts[0])}{ELLIPSIS}{parse(args[1].elts[1])}]"
         return out
 
     if (type(node.targets[0]), type(node.value)) == (ast.Tuple, ast.Tuple):
         assignments = zip(node.targets[0].elts, node.value.elts)
-        return "; ".join(rf"{parse(a)} $\leftarrow$ {parse(b)}" for a, b in assignments) + NL
+        return "; ".join(rf"{parse(a)} $\leftarrow$ {parse(b)}" for a, b in assignments)
 
-    match type(node.value):
-        case ast.Call:
-            match type(node.value.func):
-                case ast.Name:
-                    match node.value.func.id:
-                        case data_type if data_type in DATA_STRUCTURE_TYPES.keys():
-                            return data_structure(data_type)
-    return rf"{parse(node.targets[0])} $\leftarrow$ {parse(node.value)}" + NL
+    if type(node.value) == ast.Call and type(node.value.func) == ast.Name:
+        if (data_type := node.value.func.id) in DATA_STRUCTURE_TYPES.keys():
+            return data_structure(data_type)
+
+    return rf"{parse(node.targets[0])} $\leftarrow$ {parse(node.value)}"
 
 
 def parse_function_args(args: list[ast.arg]):
     def parse_arg(arg: ast.arg):
         if arg.annotation == None:
-            return color("varcolor", f"${arg.arg}$")
-        if type(arg.annotation) != ast.Call:
-            raise ValueError("algorithm arg type annotation must be call")
+            return c._var(arg.arg)
+        # if type(arg.annotation) != ast.Call:
+        #     raise ValueError("algorithm arg type annotation must be call")
         call = arg.annotation
         if call.func.id != "Array":
             raise ValueError(
                 "algorithm arg type annotation of call must be Array")
-        return f"{color("varcolor", f"${arg.arg}$")}{parse_array_bracket_list(call.args[0].elts)}"
+        return f"{c._var(arg.arg)}{parse_array_type_annotation(call.args)}"
     return ", ".join(parse_arg(arg) for arg in args)
 
 
 def parse_function_def(node: ast.FunctionDef):
-    out = r"\begin{pseudocode}"f"{{{node.name}}}"f"{{{parse_function_args(node.args.args)}}}\n"
+    global line_count
+    line_count = 0
 
-    # out = r"\code{\textsc{"f"{node.name}""}("f"{
-    #     parse_function_args(node.args.args)}"")}{\n"
+    out = r"\begin{pseudocode}"f"{{{function_name_transform(node.name)}}}"f"{{{parse_function_args(node.args.args)}}}\n"
+    body = ""
     for body_node in node.body:
-        out += parse(body_node)
-    # out += r"}\\"
+        body += parse(body_node)
+
+    out += r"\begin{tabular}{@{}r}""\n"
+    out += "".join(rf"{i}\\" for i in range(1, line_count + 1)) + "\n"
+    out += r"\end{tabular}""\n"
+    out += r"\begin{tabular}{@{}l@{}}""\n"
+    out += body
+    out += r"\end{tabular}" + NL
     out += r"\end{pseudocode}"
     return out
-
-
-def parse_annotation_assign(node: ast.AnnAssign):
-    match type(node.annotation):
-        case ast.Call:
-            call = node.annotation
-            match call.func.id:
-                case "Array":
-                    return rf"{parse_array_call_name_range(node=None, name=node.target, range=call.args[0].elts)}" + NL
-    raise ValueError("annotations should only be used for arrays")
 
 
 def parse_constant(node: ast.Constant):
     match node.value:
         case True:
-            return color("bluewordcolor", "$true$")
+            return c._true()
         case False:
-            return color("bluewordcolor", "$false$")
+            return c._false()
         case None:
-            return color("bluewordcolor", "$null$")
+            return c._null()
         case _:
-            if (my_type := type(node.value)) != int:
-                raise ValueError(f"constant value of {my_type} not recognized")
-            return color("numbercolor", node.value)
+            match type(node.value):
+                case builtins.int | builtins.float:
+                    return c._num(node.value)
+                case builtins.str:
+                    return c._str(node.value)
+                case _:
+                    raise ValueError(
+                        f"constant value of {type(node.value)} not recognized")
 
 
 def parse_unary_op(node: ast.UnaryOp):
     match type(node.op):
         case ast.Not:
             if type(node.operand) == ast.BoolOp:
-                return color("bluewordcolor", r"not") + " " + f"({parse_binary_bool_op(node.operand)})"
-            return color("bluewordcolor", r"not") + " " + parse(node.operand)
+                return f"{c._not()} ({parse_binary_bool_op(node.operand)})"
+            return f"{c._not()} {parse(node.operand)}"
         case ast.UAdd:
+            if type(node.operand) == ast.BinOp:
+                return f"$+$({parse_bin_op(node.operand)})"
             return f"$+${parse(node.operand)}"
         case ast.USub:
+            if type(node.operand) == ast.BinOp:
+                return f"$-$({parse_bin_op(node.operand)})"
             return f"$-${parse(node.operand)}"
         case _:
             raise ValueError(
@@ -321,14 +342,12 @@ def parse_unary_op(node: ast.UnaryOp):
 
 
 def parse_binary_bool_op(node: ast.BoolOp, brackets=False):
-    def parse_bool_op(op: ast.AST):
+    def parse_bool_op(op: ast.And | ast.Or):
         match type(op):
-            case ast.Not:
-                return color("bluewordcolor", r"not")
             case ast.And:
-                return color("bluewordcolor", r"and")
+                return c._and()
             case ast.Or:
-                return color("bluewordcolor", r"or")
+                return c._or()
             case _:
                 raise ValueError("unreachable")
 
@@ -361,7 +380,7 @@ def parse_bin_op(node: ast.BinOp, parent_op_type: type = None):
             case _:
                 return parse(node)
 
-    def parse_bin(bin_op: ast.AST):
+    def parse_bin(node: ast.BinOp):
         def symbol(operator: ast.AST):
             match type(operator):
                 case ast.Mult:
@@ -376,13 +395,31 @@ def parse_bin_op(node: ast.BinOp, parent_op_type: type = None):
                     return "$-$"
                 case _:
                     raise ValueError(f"unreachable {type(operator)}")
-        match type(bin_op.op):
+
+        match type(node.op):
             case ast.Pow:
-                return rf"$\text{{{parse_operand(bin_op.left)}}}^\text{{{parse_operand(bin_op.right)}}}$"
+                return rf"$\text{{{parse_operand(node.left)}}}^\text{{{parse_operand(node.right)}}}$"
             case ast.FloorDiv:
-                return rf"$\lfloor${parse_operand(bin_op.left)} $/$ {parse_operand(bin_op.right)}$\rfloor$"
-            case _:
-                return f"{parse_operand(bin_op.left)} {symbol(bin_op.op)} {parse_operand(bin_op.right)}"
+                return rf"$\lfloor${parse_operand(node.left)} $/$ {parse_operand(node.right)}$\rfloor$"
+            case ast.Mult:
+                def single(node: ast.AST):
+                    return type(node) == ast.Name and len(node.id) == 1
+
+                l, r = type(node.left), type(node.right)
+                match (l, r):
+                    case (ast.Constant, ast.Name):
+                        if single(node.right):
+                            return f"{parse_constant(node.left)}{parse_name(node.right)}"
+                    case (ast.Name, ast.Name):
+                        if single(node.left) and single(node.right):
+                            return f"{parse_name(node.left)}{parse_name(node.right)}"
+                    case (ast.BinOp, ast.Name):
+                        if single(node.left.right) and single(node.right):
+                            return f"{parse_bin(node.left)}{parse_name(node.right)}"
+                    case (ast.Name, ast.BinOp):
+                        if single(node.left) and single(node.right.left):
+                            return f"{parse_name(node.left)}{parse_bin(node.right)}"
+        return f"{parse_operand(node.left)} {symbol(node.op)} {parse_operand(node.right)}"
     parsed = parse_bin(node)
     if this_type != parent_op_type and \
             this_type != ast.FloorDiv and \
@@ -394,81 +431,94 @@ def parse_bin_op(node: ast.BinOp, parent_op_type: type = None):
 def parse_name(node: ast.Name):
     if node.id == "_":
         return ""
-    return color("varcolor", f"${node.id.replace("_", r"\_")}$")
+    return c._var(node.id.replace("_", r"\_"))
 
 
 def parse_kv_pair(node: ast.List):
     return rf"$\langle${', '.join(parse(e) for e in node.elts)}$\rangle$"
 
 
+def parse_tuple(node: ast.Tuple):
+    return f"({", ".join(parse(val) for val in node.elts)})"
+
+
 def parse(node: ast.AST):
+    out = ""
     match type(node):
         case ast.Constant:
-            return parse_constant(node)
+            out = parse_constant(node)
         case ast.Eq:
-            return r"$=$"
+            out = r"$=$"
         case ast.NotEq:
-            return r"$\not=$"
+            out = r"$\not=$"
         case ast.Lt:
-            return r"$<$"
+            out = r"$<$"
         case ast.LtE:
-            return r"$\leq$"
+            out = r"$\leq$"
         case ast.Gt:
-            return r"$>$"
+            out = r"$>$"
         case ast.GtE:
-            return r"$\geq$"
+            out = r"$\geq$"
         case ast.Expr:
-            return rf"{parse(node.value)}" + NL
+            out = rf"{parse(node.value)}"
         case ast.BinOp:
-            return parse_bin_op(node)
+            out = parse_bin_op(node)
         case ast.BoolOp:
-            return parse_binary_bool_op(node)
+            out = parse_binary_bool_op(node)
         case ast.UnaryOp:
-            return parse_unary_op(node)
+            out = parse_unary_op(node)
         case ast.Attribute:
-            return f"{parse(node.value)}." + color("varcolor", f"${node.attr}$")
+            out = f"{parse(node.value)}." + c._var(node.attr)
         case ast.Name:
-            return parse_name(node)
+            out = parse_name(node)
         case ast.Subscript:
-            return f"{parse(node.value)}[{parse(node.slice)}]"
+            out = parse_array_subscript(node)
         case ast.FunctionDef:
-            return parse_function_def(node)
+            out = parse_function_def(node)
         case ast.Return:
-            ret = color("controlcolor", r"\textbf{return}")
+            ret = c._return()
             if node.value:
-                return ret + f" {parse(node.value)}" + NL
-            return ret + NL
+                out = ret + f" {parse(node.value)}"
+            else:
+                out = ret
         case ast.Call:
-            return parse_call(node)
+            out = parse_call(node)
         case ast.If:
-            return parse_if_or_elif(node, "if")
+            out = parse_if_or_elif(node, "if")
         case ast.IfExp:
-            return parse_ternary(node)
+            out = parse_ternary(node)
         case ast.While:
-            return parse_while(node)
+            out = parse_while(node)
         case ast.For:
-            return parse_for(node)
+            out = parse_for(node)
         case ast.Continue:
-            return color("controlcolor", r"\textbf{continue}") + NL
+            out = c._con("continue")
         case ast.Break:
-            return color("controlcolor", r"\textbf{break}") + NL
+            out = c._con("break")
+        case ast.Pass:
+            out = c._con("TODO")
         case ast.Compare:
-            return f"{parse(node.left)} {parse(node.ops[0])} {parse(node.comparators[0])}"
+            out = f"{parse(node.left)} {parse(node.ops[0])} {parse(node.comparators[0])}"
         case ast.Assign:
-            return parse_assign(node)
+            out = parse_assign(node)
         case ast.AugAssign:
-            return rf"{parse(node.target)} $\leftarrow$ {parse(node.target)} {parse(node.op)} {parse(node.value)}" + NL
-        case ast.AnnAssign:
-            return parse_annotation_assign(node)
+            out = rf"{parse(node.target)} $\leftarrow$ {parse_bin_op(ast.BinOp(node.target, node.op, node.value))}"
+        case ast.Tuple:
+            out = parse_tuple(node)
         case ast.List:
-            return parse_kv_pair(node)
+            out = parse_kv_pair(node)
 
-    return ""
+    global line_count
+    if isinstance(node, ast.stmt):
+        if type(node) != ast.FunctionDef:
+            line_count += 1
+        return out + NL
+    return out
 
 
-def convert(theme: Theme, filename: str, debug: bool):
-    global my_theme
-    my_theme = theme
+def convert(filename: str, debug: bool, cmd: MacroList):
+    global c
+    c = cmd
 
     text = None
     with open(filename) as f:

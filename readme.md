@@ -5,19 +5,19 @@ A Python transpiler to $\LaTeX$ that outputs the pseudocode of CSE214 with Prof.
 Run `converter.py -h` to get started.
 
 # Array syntax
+
 <table>
 <tr>
 <td>
 
 ```py
 # ex1.py
-def Arrays():
-    A = Array((1, n))
-    B = Array((1, n), (0, 0))
-    C = Array((1, n), (1, n))
-    D = Array((1, n), Array(B, (1, n)))
-    Array(E, (1, n))  # equivalent to F
-    F: Array((1, n))  # equivalent to E
+def arrays(p1: Array(), p2: Array((a, b))):
+    A = Array()
+    B = Array((a, b))
+    C = Array(B[1:n])
+    C = Array((a, b), (c, d))
+    D = Array((a, b), C[1:n])
 ```
 
  </td>
@@ -81,7 +81,7 @@ converter.py ex2.py -o my_file.tex -t 1
 
 ```py
 # ex3.py
-def Foo(a, b, MyArr: Array((1, n))):
+def Foo(a, b, MyArr: Array()):
     1 + 2 / 3 * 4 - 5 ** 6 // 7 % 8
     (1 + 2) / (3 * 4) - 5 ** 6 // (7 % 8)
     _ # force newlines
